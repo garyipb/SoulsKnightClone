@@ -5,13 +5,13 @@
 5. Buat action "Move" dan bind WASD
 6. Buat action "Dash" dan bind Space
 7. Save dan generate C# Class
-8. Tambahin component RigidBody 2D di Player dan set Freeze Rotation Z false dan Gravity Scale 0
-9. Tambahin component baru di Player dengan nama "PlayerController" taro di folder "Scripts"
+8. Buat 2D Object > Sprites > Circle dengan nama Player
+9. Tambahin component RigidBody 2D ke Player dan set Freeze Rotation Z true dan Gravity Scale 0
+10. Tambahin component baru di Player dengan nama "PlayerController" taro di folder "Scripts"
 ```cs
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
@@ -75,4 +75,4 @@ public class PlayerController : MonoBehaviour
     }
 }
 ```
-10. buat Player jadi prefab (tinggal drag Player ke project folder)
+11. buat Player jadi prefab (tinggal drag Player ke project folder)
