@@ -3,7 +3,6 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement")]
     public float moveSpeed = 5f;
     public float dashSpeed = 15f;
     public float dashDuration = 0.2f;
@@ -17,10 +16,14 @@ public class PlayerController : MonoBehaviour
     private float dashCooldownTime;
 
     private PlayerControls controls;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         controls = new PlayerControls();
 
         controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
@@ -41,7 +44,7 @@ public class PlayerController : MonoBehaviour
         else
         {
             rb.linearVelocity = moveInput * moveSpeed;
-            if (moveInput.sqrMagnitude > 0.0f)
+            if (moveInput.sqrMagnitude > 0.01f)
             {
                 dashInput = moveInput;
             }
@@ -51,6 +54,8 @@ public class PlayerController : MonoBehaviour
         {
             isDashing = false;
         }
+
+        UpdateAnimator();
     }
 
     private void TryDash()
@@ -61,5 +66,17 @@ public class PlayerController : MonoBehaviour
             dashTime = Time.time + dashDuration;
             dashCooldownTime = Time.time + dashCooldown;
         }
+    }
+
+    private void UpdateAnimator()
+    {
+        bool isMoving = moveInput.sqrMagnitude > 0.01f;
+        animator.SetBool("IsMoving", isMoving);
+
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector2 mouseDir = mouseWorld - transform.position;
+        animator.SetFloat("MouseY", mouseDir.y);
+
+        spriteRenderer.flipX = mouseDir.x < 0;
     }
 }
