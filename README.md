@@ -1,171 +1,82 @@
-1. Bikin project baru pake template "Universal 2D"
-2. Buat folder "Input" dan InputAction baru dengan nama "PlayerControls"
-3. Buka InputAction yang baru dan buat action map "Player"
-4. Buat action "Move" dan bind WASD
-5. Buat action "Dash" dan bind Space
-6. Save dan generate C# Class
-7. Buat 2D Object > Sprites > Circle dengan nama Player
-8. Tambahin component RigidBody 2D ke Player dan set Freeze Rotation Z true dan Gravity Scale 0
-9.  Tambahin component baru di Player dengan nama "PlayerController" taro di folder "Scripts"
+1. Buat Tilemap > Rectangle dengan nama Tilemap childnya Wall
+2. Tambahin Tilemap Collider 2D dan Composite Collider 2D
+3. Di Tilemap Collider 2D, set Collider Operation menjadi Merge
+4. Di Composite Collider 2D, set Geometry Type menjadi Polygons
+5. Di Rigidbody 2D, set Body Type menjadi Static
+6. Slice tile sprite jadi 16x16, set Pixel Per Unit sama kayak sprite player, set filter mode menjadi Point, dan set Compression menjadi None
+7. Drag spritenya ke Tile Palette
+8. Bikin tilemap lagi di parent Grid yang sama tanpa collider dengan nama Ground
+9. Tambahin Box Collider 2D di player lalu set posisi dan ukurannya
+10. Buka Assets/Settings/Renderer2D dan set Transparency Sort Mode menjadi Custom Axis
+11. Slice ulang sprite Player biar pivotnya di bawah
+12. Buat Sorting Layer baru buat tilemap Ground dengan nama Ground dan posisinya di atas layer Default
+13. Tambahin Box Collider 2D di Player biar bisa collide sama dindingnya
+14. Buat 2D Object > Sprites > Circle dengan nama Projectile
+15. Tambahin Rigidbody 2D dan Circle Collider 2D
+16. Tambahin input action baru namanya "Attack" dan bind ke LMB
+17. Buat script Projectile.cs
 ```cs
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class Projectile : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float dashSpeed = 15f;
-    public float dashDuration = 0.2f;
-    public float dashCooldown = 0.5f;
+    public float speed = 20f;
+    public float lifeTime = 2f;
 
     private Rigidbody2D rb;
-    private Vector2 moveInput;
-    private Vector2 dashInput;
-    private bool isDashing = false;
-    private float dashTime;
-    private float dashCooldownTime;
 
-    private PlayerControls controls;
-
-    private void Awake()
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        controls = new PlayerControls();
-
-        controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-
-        controls.Player.Dash.performed += ctx => TryDash();
     }
 
-    private void OnEnable() => controls.Player.Enable();
-    private void OnDisable() => controls.Player.Disable();
-
-    private void FixedUpdate()
+    void Start()
     {
-        if (isDashing)
-        {
-            rb.linearVelocity = dashInput.normalized * dashSpeed;
-        }
-        else
-        {
-            rb.linearVelocity = moveInput * moveSpeed;
-            if (moveInput.sqrMagnitude > 0.01f)
-            {
-                dashInput = moveInput;
-            }
-        }
-
-        if (isDashing && Time.time > dashTime)
-        {
-            isDashing = false;
-        }
+        Destroy(gameObject, lifeTime);
     }
 
-    private void TryDash()
+    public void Fire(Vector2 direction)
     {
-        if (!isDashing && Time.time > dashCooldownTime && dashInput != Vector2.zero)
-        {
-            isDashing = true;
-            dashTime = Time.time + dashDuration;
-            dashCooldownTime = Time.time + dashCooldown;
-        }
+        rb.linearVelocity = direction.normalized * speed;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Destroy(gameObject);
     }
 }
 ```
-11. Buat Player jadi prefab (tinggal drag Player ke project folder) trus taro di folder dengan nama "Prefabs"
-12. Buat folder baru "Sprites/Player" buat naro spritenya player
-13. Slice setiap sprite player dengan cara buka Sprite Editornya trus pilih slice dan type Grid By Cell Size trus atur cell sizenya jadi 24x24 lalu apply
-14. Ubah filter mode dari semua sprite ke Point
-15. Drag semua file spritenya ke scene (satu satu)
-16. Taro Animation Clip nya ke folder "Animations/Player"
-17. Hapus semua Animation Controller yang ga perlu
-18. Buat Animation Controller baru dengan nama Player
-19. Masukkin semua Animation Clip yang udah kita bikin sebelumnya ke Animation Controller
-20. Buat animasi idle jadi default dengan klik kanan lalu Set as Layer Default State
-21. Tambahin parameter "IsMoving" dan "MouseY" ke Animation Controller
-22. Atur graphnya dan juga buat setiap transisi Has Exit Time = false dan Transition Duration = 0
+18.  Edit PlayerController.cs
 ```cs
-using UnityEngine;
-using UnityEngine.InputSystem;
-
-public class PlayerController : MonoBehaviour
+public GameObject projectilePrefab;
+public Transform firePoint;
+public float fireCooldown = 0.2f;
+private float fireTimer;
+```
+```cs
+// di Awake()
+controls.Player.Shoot.performed += ctx => TryShoot();
+```
+```cs
+// di FixedUpdate()
+fireTimer -= Time.fixedDeltaTime;
+```
+```cs
+// tambah method baru
+private void TryAttack()
 {
-    public float moveSpeed = 5f;
-    public float dashSpeed = 15f;
-    public float dashDuration = 0.2f;
-    public float dashCooldown = 0.5f;
+    if (fireTimer > 0) return;
 
-    private Rigidbody2D rb;
-    private Vector2 moveInput;
-    private Vector2 dashInput;
-    private bool isDashing = false;
-    private float dashTime;
-    private float dashCooldownTime;
+    Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+    Vector2 shootDir = mouseWorld - transform.position;
 
-    private PlayerControls controls;
-    private Animator animator;
-    private SpriteRenderer spriteRenderer;
+    GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+    projectile.GetComponent<Projectile>().Fire(shootDir);
 
-    private void Awake()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        controls = new PlayerControls();
-
-        controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-
-        controls.Player.Dash.performed += ctx => TryDash();
-    }
-
-    private void OnEnable() => controls.Player.Enable();
-    private void OnDisable() => controls.Player.Disable();
-
-    private void FixedUpdate()
-    {
-        if (isDashing)
-        {
-            rb.linearVelocity = dashInput.normalized * dashSpeed;
-        }
-        else
-        {
-            rb.linearVelocity = moveInput * moveSpeed;
-            if (moveInput.sqrMagnitude > 0.01f)
-            {
-                dashInput = moveInput;
-            }
-        }
-
-        if (isDashing && Time.time > dashTime)
-        {
-            isDashing = false;
-        }
-
-        UpdateAnimator();
-    }
-
-    private void TryDash()
-    {
-        if (!isDashing && Time.time > dashCooldownTime && dashInput != Vector2.zero)
-        {
-            isDashing = true;
-            dashTime = Time.time + dashDuration;
-            dashCooldownTime = Time.time + dashCooldown;
-        }
-    }
-
-    private void UpdateAnimator()
-    {
-        bool isMoving = moveInput.sqrMagnitude > 0.01f;
-        animator.SetBool("IsMoving", isMoving);
-
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        Vector2 mouseDir = mouseWorld - transform.position;
-        animator.SetFloat("MouseY", mouseDir.y);
-
-        spriteRenderer.flipX = mouseDir.x < 0;
-    }
+    fireTimer = fireCooldown;
 }
 ```
+19.  Di Player, tambahin Empty object namanya firePoint
+20.  Di component PlayerController, set variabel Fire Point sama Projectile (tinggal drag n drop)
+21.  Tambah layer Player dan Projectile dan assign yang sesuai ke Player sama Projectile 
+22.  Di Projectile Rigidbody 2D, exclude Player sama Projectile

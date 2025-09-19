@@ -19,6 +19,11 @@ public class PlayerController : MonoBehaviour
     private Animator animator;
     private SpriteRenderer spriteRenderer;
 
+    public GameObject projectilePrefab;
+    public Transform firePoint;
+    public float fireCooldown = 0.2f;
+    private float fireTimer;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -30,6 +35,8 @@ public class PlayerController : MonoBehaviour
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
         controls.Player.Dash.performed += ctx => TryDash();
+
+        controls.Player.Attack.performed += ctx => TryAttack();
     }
 
     private void OnEnable() => controls.Player.Enable();
@@ -56,6 +63,8 @@ public class PlayerController : MonoBehaviour
         }
 
         UpdateAnimator();
+
+        fireTimer -= Time.fixedDeltaTime;
     }
 
     private void TryDash()
@@ -66,6 +75,18 @@ public class PlayerController : MonoBehaviour
             dashTime = Time.time + dashDuration;
             dashCooldownTime = Time.time + dashCooldown;
         }
+    }
+    private void TryAttack()
+    {
+        if (fireTimer > 0) return;
+
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector2 mouseDir = mouseWorld - transform.position;
+
+        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+        projectile.GetComponent<Projectile>().Fire(mouseDir);
+
+        fireTimer = fireCooldown;
     }
 
     private void UpdateAnimator()
