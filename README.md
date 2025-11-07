@@ -63,7 +63,7 @@ fireTimer -= Time.fixedDeltaTime;
 ```
 ```cs
 // tambah method baru
-private void TryAttack()
+private void TryShoot()
 {
     if (fireTimer > 0) return;
 
