@@ -24,6 +24,8 @@ public class PlayerController : MonoBehaviour
     public float fireCooldown = 0.2f;
     private float fireTimer;
 
+    private bool isDead = false;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -44,6 +46,11 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (isDead)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
         if (isDashing)
         {
             rb.linearVelocity = dashInput.normalized * dashSpeed;
@@ -69,6 +76,7 @@ public class PlayerController : MonoBehaviour
 
     private void TryDash()
     {
+        if (isDead) return;
         if (!isDashing && Time.time > dashCooldownTime && dashInput != Vector2.zero)
         {
             isDashing = true;
@@ -78,6 +86,7 @@ public class PlayerController : MonoBehaviour
     }
     private void TryAttack()
     {
+        if (isDead) return;
         if (fireTimer > 0) return;
 
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
@@ -99,5 +108,14 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("MouseY", mouseDir.y);
 
         spriteRenderer.flipX = mouseDir.x < 0;
+    }
+
+    public void Die()
+    {
+        if (isDead) return;
+        isDead = true;
+        animator.SetBool("IsDead", true);
+        rb.linearVelocity = Vector2.zero;
+        GetComponent<Collider2D>().enabled = false;
     }
 }
