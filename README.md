@@ -7,27 +7,43 @@ Tutor
 
 1. import sprite enemy ke `Assets/Sprites/Enemy/`
 2. di inspector, ubah `Pixel Per Ponit` menjadi sama dengan sprite Player (klo disini `16`), filter mode jadi `Point (no filter)`, compression jadi `None`
+
 ![enemy sprite property](image.png)
-3. Buat setiap sprite, buka Sprite Editor trus pilih Slice lalu pilih typenya `Grid By Cell Size`, cell sizenya `24x24`, pivot `bottom`, lalu klik `Slice` trus `apply`
+
+4. Buat setiap sprite, buka Sprite Editor trus pilih Slice lalu pilih typenya `Grid By Cell Size`, cell sizenya `24x24`, pivot `bottom`, lalu klik `Slice` trus `apply`
+
 ![opsi slicing](image-1.png) 
-4. Buat animation dengan cara drag aja spritenya ke scene. Trus nanti save di `Animations/Enemy` sesuai nama animasinya. Trus buat animasi `Die` dan `DieBack` loop timenya false
+
+6. Buat animation dengan cara drag aja spritenya ke scene. Trus nanti save di `Animations/Enemy` sesuai nama animasinya. Trus buat animasi `Die` dan `DieBack` loop timenya false
+
 ![alt text](image-12.png)
-5. Hapus `Animation Controller` dan `Game Object` yang dibuat automatis
+
+8. Hapus `Animation Controller` dan `Game Object` yang dibuat automatis
+
 ![anmation controllers](image-2.png)
+
 ![alt text](image-3.png)
-6. Bikin juga buat animasi tambahan `Player`
-7. Bikin `Animation Controller` dengan nama `Enemy` terus buka animatornya dan drag semua animasi yang udah kita buat. Pastiin animasi Idle jadi defaultnya (warna kuning)
+
+9. Bikin juga buat animasi tambahan `Player`
+10. Bikin `Animation Controller` dengan nama `Enemy` terus buka animatornya dan drag semua animasi yang udah kita buat. Pastiin animasi Idle jadi defaultnya (warna kuning)
+
 ![alt text](image-4.png)
-8. Tambahin parameter baru buat animasi
+
+11. Tambahin parameter baru buat animasi
    - Bool `IsMoving`
    - Float `DirY`
    - Bool `IsDead`
-9. Buat transisi untuk setiap animasi (sesuai logika aja, gunain parameter yang udah dibuat tadi). Setiap transisi buat `Has Exit Time` jadi false, `Transition Duration` jadi 0, dan sesuain `Conditions`-nya (misalnya klo dari `Idle` ke `Die` berarti kondisinya `IsDead = true`)
+11. Buat transisi untuk setiap animasi (sesuai logika aja, gunain parameter yang udah dibuat tadi). Setiap transisi buat `Has Exit Time` jadi false, `Transition Duration` jadi 0, dan sesuain `Conditions`-nya (misalnya klo dari `Idle` ke `Die` berarti kondisinya `IsDead = true`)
+
 ![alt text](image-6.png)
+
 ![alt text](image-5.png)
-10.  Update juga `Animation Controller`-nya `Player` dengan nambahin parameter `IsDead` dan tambahin animasi `Die` dan `DieBack`. Buat kayak gini juga
+
+12.  Update juga `Animation Controller`-nya `Player` dengan nambahin parameter `IsDead` dan tambahin animasi `Die` dan `DieBack`. Buat kayak gini juga
+
 ![alt text](image-9.png)
-11.  Buat `GameObject` baru dengan nama "Enemy". Tambahin komponen `Sprite Renderer`, `Animator`, `Rigidbody 2D`, `Box Collider 2D`, `EnemyController`, dan `Health`
+
+13.  Buat `GameObject` baru dengan nama "Enemy". Tambahin komponen `Sprite Renderer`, `Animator`, `Rigidbody 2D`, `Box Collider 2D`, `EnemyController`, dan `Health`
 ```cs
 using UnityEngine;
 
@@ -167,12 +183,18 @@ public class Health : MonoBehaviour
 }
 ```
 12. Set `Sprite` di `Sprite Renderer` jadi `idle_0`-nya Enemy (keknya ga perlu sih tapi). Trus set `Controller` di `Animator` jadi `Enemy`
+
 ![alt text](image-8.png)
+
 13. Sesuain `Box Collider` (sesuai sprite aja tapi bagian kaki doang (klo gue offset x=0 y=0.15 dan size x=0.75 y=0.3)), `Enemy Controller` (sesuaiin speednya klo mau), `Health` (sesuaiin max healthnya)
 14. Tambahin event handlernya `On Death`. trus masukin objectnya `Enemy Controller` (drag aja enemy controller di inspector trus drop di bagian objectnya) trus cari fungsi `die()`
+
 ![alt text](image-10.png)
+
 15. Trus tambahin lagi `Game Object` sebagai child dari enemy namain `DamageArea` trus tambahin `Box Collider 2D` sesuaiin areanya trus centang `Is Trigger`
+
 ![alt text](image-11.png)
+
 16. ganti `Projectile.cs` jadi kayak gini
 ```cs
 using UnityEngine;
@@ -337,7 +359,9 @@ public class PlayerController : MonoBehaviour
 }
 ```
 19. Coba mainin dulu. Seharusnya enemy udah bisa ngejar dan mati klo ditembak. player juga udah bisa mati dan kena damage klo nyentuh enemy. Kalo `Enemy` blom ngejar `Player`, pastiin `Player` udah punya tag `Player` 
+
 ![alt text](image-7.png)
+
 20. Nanti kan ceritanya object `Enemy` bakal mau di pake berkali kali ya, jadi buat menjadi prefab. caranya tiggal drag aja objectnya ke folder mana aja di window `Project` (tapi taro di folder `Prefabs` sih yang bener)
 
 Catetan: emang blom ada feedback kalo kena damage dll sih, ntar aja dipolishnya wkwkwwk yang penting jadi dlu.
